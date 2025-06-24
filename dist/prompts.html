@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lyra Prompt Mirror</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-900 text-white p-6 font-mono">
+    <h1 class="text-3xl font-bold mb-4">🪞 Lyra Prompt Mirror</h1>
+
+    <section>
+  <h3 style="color: cyan;">Current Lyra Prompt 🪞</h3>
+  <pre id="current-prompt" style="background: #111; color: #88f; padding: 1em; border: 1px solid #444;">
+    Loading...
+  </pre>
+</section>
+	<section>
+  <h3 style="color: gold;">Pending Prompt Update 🔄</h3>
+  <pre id="pending-prompt" style="background: #222; color: #ccc; padding: 1em; border: 1px solid #555;">
+    No update received.
+  </pre>
+  
+  <button onclick="approveUpdate()">✅ Approve</button>
+  <button onclick="revertUpdate()">❌ Revert</button>
+</section>
+    <section>
+      <h2 class="text-xl font-semibold">Prompt History</h2>
+      <ul id="version-list" class="list-disc list-inside text-sm text-gray-300">
+        <li>v1.0 — Initialized</li>
+        <!-- Future entries will go here -->
+      </ul>
+    </section>
+
+    <script>
+  async function loadPromptUpdate() {
+    try {
+      const response = await fetch("prompts/pending_update.json");
+      const data = await response.json();
+
+      const pendingEl = document.getElementById("pending-prompt");
+      pendingEl.textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+      console.warn("No pending prompt update found.");
+    }
+  }
+
+  window.onload = () => {
+    loadPromptUpdate();
+	loadCurrentPrompt();
+  };
+    
+  async function loadCurrentPrompt() {
+  try {
+    const response = await fetch("prompts/lyra_voice_system_prompt.json");
+    const data = await response.json();
+
+    const currentEl = document.getElementById("current-prompt");
+    currentEl.textContent = JSON.stringify(data, null, 2);
+  } catch (err) {
+    console.error("Failed to load current prompt:", err);
+  }
+}
+
+
+</script>
+
+<script>
+  async function approveUpdate() {
+    try {
+      await window.__TAURI__.invoke("approve_prompt_update");
+      alert("✅ Prompt approved.");
+      location.reload();
+    } catch (err) {
+      console.error("Approval failed:", err);
+    }
+  }
+
+  async function revertUpdate() {
+    try {
+      await window.__TAURI__.invoke("revert_prompt_update");
+      alert("❌ Prompt reverted.");
+      location.reload();
+    } catch (err) {
+      console.error("Revert failed:", err);
+    }
+  }
+</script>
+
+
+  </body>
+</html>
